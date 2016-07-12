@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/codegangsta/cli"
+	"github.com/urfave/cli"
 	"github.com/kawamuray/prometheus-exporter-harness/harness"
 	"github.com/kawamuray/prometheus-kafka-consumer-group-exporter/exporter"
 )
