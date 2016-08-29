@@ -6,11 +6,17 @@ import (
 	"github.com/kawamuray/prometheus-exporter-harness/harness"
 	"github.com/prometheus/client_golang/prometheus"
 	"os/exec"
+	"regexp"
 	"strconv"
 	"strings"
 	"sync"
 	"sync/atomic"
 )
+
+// Fields separator is different between kafka versions
+// 0.9.X  => ", "
+// 0.10.X => \s+
+var ConsumerGroupCommandDescribeOutputSeparatorRegexp = regexp.MustCompile(`,?\s+`)
 
 type Collector struct {
 	BootstrapServers         string
@@ -80,7 +86,7 @@ type PartitionInfo struct {
 }
 
 func parsePartitionInfo(line string) (*PartitionInfo, error) {
-	fields := strings.Split(line, ", ")
+	fields := ConsumerGroupCommandDescribeOutputSeparatorRegexp.Split(line, -1)
 	if len(fields) != 7 {
 		return nil, fmt.Errorf("malformed line")
 	}
