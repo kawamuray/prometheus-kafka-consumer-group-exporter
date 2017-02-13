@@ -2,15 +2,16 @@ package exporter
 
 import (
 	"fmt"
-	log "github.com/Sirupsen/logrus"
-	"github.com/kawamuray/prometheus-exporter-harness/harness"
-	"github.com/prometheus/client_golang/prometheus"
 	"os/exec"
 	"regexp"
 	"strconv"
 	"strings"
 	"sync"
 	"sync/atomic"
+
+	log "github.com/Sirupsen/logrus"
+	"github.com/kawamuray/prometheus-exporter-harness/harness"
+	"github.com/prometheus/client_golang/prometheus"
 )
 
 // Fields separator is different between kafka versions
@@ -104,11 +105,7 @@ func parsePartitionInfo(line string) (*PartitionInfo, error) {
 	return partitionInfo, nil
 }
 
-func (col *Collector) describeGroup(group string) ([]*PartitionInfo, error) {
-	output, err := col.execConsumerGroupCommand("--describe", "--group", group)
-	if err != nil {
-		return nil, err
-	}
+func parsePartitionOutput(output string) ([]*PartitionInfo, error) {
 	lines := strings.Split(output, "\n")[1:] /* discard header line */
 	partitionInfos := make([]*PartitionInfo, 0, len(lines))
 	for _, line := range lines {
@@ -124,7 +121,14 @@ func (col *Collector) describeGroup(group string) ([]*PartitionInfo, error) {
 	}
 
 	return partitionInfos, nil
+}
 
+func (col *Collector) describeGroup(group string) ([]*PartitionInfo, error) {
+	output, err := col.execConsumerGroupCommand("--describe", "--group", group)
+	if err != nil {
+		return nil, err
+	}
+	return parsePartitionOutput(output)
 }
 
 func (col *Collector) maybeUpdate() {
