@@ -1,8 +1,9 @@
 prometheus-kafka-consumer-group-exporter
 ========================================
 
-A [Prometheus](https://prometheus.io/) exporter for Kafka's consumer group
-information.
+A [prometheus](https://prometheus.io/) exporter for Kafka's consumer group
+information. For other metrics from Kafka, have a look at the [JMX
+exporter](https://github.com/prometheus/jmx_exporter).
 
 Capabilities
 ============
