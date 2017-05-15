@@ -28,14 +28,20 @@ which has been tested to use from this exporter:
  - `0.10.0.1`
  - `0.9.0.1`
 
-Build
-=====
+Install and run
+===============
 ```sh
-$ mkdir -p $GOPATH/src/github.com/kawamuray
-$ cd $GOPATH/src/github.com/kawamuray
-$ git clone https://github.com/kawamuray/prometheus-kafka-consumer-group-exporter.git
-$ cd prometheus-kafka-consumer-group-exporter
-$ go get . && go build -o kafka_consumer_group_exporter .
+$ go get github.com/kawamuray/prometheus-kafka-consumer-group-exporter
+$ $GOPATH/bin/prometheus-kafka-consumer-group-exporter -help
+```
+
+How to start developing
+=======================
+```sh
+$ go get github.com/kawamuray/prometheus-kafka-consumer-group-exporter
+$ cd $GOPATH/src/github.com/kawamuray/prometheus-kafka-consumer-group-exporter
+$ git checkout -b my-new-feature
+$ go test -v ./...    # Run tests to make sure you have a good development environment and all works.
 ```
 
 Example Usage
