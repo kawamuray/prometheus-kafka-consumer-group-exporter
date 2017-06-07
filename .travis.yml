@@ -1,9 +1,5 @@
 language: go
 script: go test -v -race ./...
-before_install:
-  - go get github.com/mitchellh/gox
-after_success:
-  - gox -output "dist/{{.OS}}_{{.Arch}}_{{.Dir}}"
 before_deploy:
   - PLATFORMS=(darwin/386 darwin/amd64 freebsd/386 freebsd/amd64 freebsd/arm linux/386 linux/amd64 linux/arm windows/386 windows/amd64)
  # build binary for all archs
