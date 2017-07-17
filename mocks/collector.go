@@ -31,6 +31,9 @@ func (col *ConsumerGroupsCommandClient) DescribeGroup(_ context.Context, group s
 	return col.DescribeGroupFn(group)
 }
 
+// NewBasicConsumerGroupsCommandClient creates a new
+// ConsumerGroupsCommandClient with prepopulated functions. For mocking, you
+// can override the function implementations.
 func NewBasicConsumerGroupsCommandClient() *ConsumerGroupsCommandClient {
 	return &ConsumerGroupsCommandClient{
 		GroupsFn: func() ([]string, error) {

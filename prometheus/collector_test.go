@@ -18,7 +18,7 @@ func TestPartitionInfoCollector(t *testing.T) {
 
 	timeout := 1 * time.Minute
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
-	collector := NewPartitionInfoCollector(mocks.NewBasicConsumerGroupsCommandClient(), ctx, timeout, 4)
+	collector := NewPartitionInfoCollector(ctx, mocks.NewBasicConsumerGroupsCommandClient(), timeout, 4)
 	cancel()
 	registry.MustRegister(collector)
 

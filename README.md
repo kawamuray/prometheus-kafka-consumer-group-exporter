@@ -44,6 +44,15 @@ $ git checkout -b my-new-feature
 $ go test -v ./...    # Run tests to make sure you have a good development environment and all works.
 ```
 
+Before pull requests you may also want to make sure that `go vet`, `gofmt` and `golint` passes:
+```sh
+$ go get -u github.com/golang/lint/golint
+$ golint ./...
+$ ./check_gofmt.sh
+$ go vet ./...
+```
+(otherwise that's done through our CI on pull request submission)
+
 Example Usage
 =============
 ```sh

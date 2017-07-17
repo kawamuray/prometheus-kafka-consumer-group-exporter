@@ -63,8 +63,8 @@ func main() {
 			Delegate: &kafkaClient,
 		}
 		collector := kafkaprom.NewPartitionInfoCollector(
-			&fanInClient,
 			context.Background(),
+			&fanInClient,
 			c.Duration("kafka-command-timeout"),
 			c.Int("max-concurrent-group-queries"),
 		)

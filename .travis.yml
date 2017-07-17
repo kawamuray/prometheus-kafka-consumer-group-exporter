@@ -1,2 +1,13 @@
 language: go
+
+install:
+  - go get -u github.com/golang/lint/golint
+  # This is default if `install` not overridden:
+  - go get -t -v ./...
+
+before_script:
+  - ./check_gofmt.sh
+  - go vet ./...
+  - golint -set_exit_status ./...
+
 script: go test -v -race ./...
