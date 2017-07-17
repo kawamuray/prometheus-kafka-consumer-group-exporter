@@ -9,14 +9,14 @@ Capabilities
 ============
  - Exports Kafka's consumer group information which can be obtained by
    executing `kafka-consumer-groups.sh`
- - Supports only new consumer(`--new-consumer` switch enabled by default) which
-   uses Kafka broker as the offset checkpoint store
+ - Supports only new consumer (`--new-consumer` switch enabled by default)
+   which uses Kafka broker as the offset checkpoint store
 
 Export metrics
 ==============
- - `kafka_broker_consumer_group_current_offset` : Consuming offset of each
+ - `kafka_broker_consumer_group_current_offset`: Consuming offset of each
    consumer group/client/topic/partition based on committed offset
- - `kafka_broker_consumer_group_offset_lag` : Offset lag between the last log
+ - `kafka_broker_consumer_group_offset_lag`: Offset lag between the last log
    end offset and consuming point of each consumer group/client/topic/partition
 
 Supported Kafka versions
