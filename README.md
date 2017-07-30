@@ -31,7 +31,7 @@ which has been tested to use from this exporter:
 Install and run
 ===============
 ```sh
-$ go get github.com/kawamuray/prometheus-kafka-consumer-group-exporter
+$ go get github.com/kawamuray/prometheus-kafka-consumer-group-exporter/...
 $ $GOPATH/bin/prometheus-kafka-consumer-group-exporter -help
 ```
 
