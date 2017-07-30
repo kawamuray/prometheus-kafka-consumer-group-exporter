@@ -56,7 +56,7 @@ $ go vet ./...
 Example Usage
 =============
 ```sh
-# Download latest Kafka distribution(if necessary)
+# Download latest Kafka distribution (if necessary)
 $ tar zxvf kafka_LATEST_VERSION.tgz
 $ ./kafka_consumer_group_exporter --consumer-group-command-path=./kafka_LATEST_VERSION/bin/kafka-consumer-groups.sh BOOTSTRAP_SERVERS
 ```
