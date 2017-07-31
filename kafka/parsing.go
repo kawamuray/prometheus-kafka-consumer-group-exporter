@@ -49,10 +49,12 @@ func parseLong(value string) (int64, error) {
 	return longVal, nil
 }
 
+const expectedPartitionInfoFields = 7
+
 func parsePartitionInfo(line string) (*exporter.PartitionInfo, error) {
 	fields := consumerGroupCommandDescribeOutputSeparatorRegexp.Split(line, -1)
-	if len(fields) != 7 {
-		return nil, fmt.Errorf("malformed line: %s", line)
+	if len(fields) != expectedPartitionInfoFields {
+		return nil, fmt.Errorf("incorrect number of fields. Expected: %d Was: %d Line: %s", expectedPartitionInfoFields, len(fields), line)
 	}
 
 	var err error
