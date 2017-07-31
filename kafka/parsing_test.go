@@ -6,6 +6,43 @@ import (
 	exporter "github.com/kawamuray/prometheus-kafka-consumer-group-exporter"
 )
 
+func TestParsePartitionTableForKafkaVersion0_10_2_1(t *T) {
+	output := `TOPIC                          PARTITION  CURRENT-OFFSET  LOG-END-OFFSET  LAG        CONSUMER-ID                                       HOST                           CLIENT-ID
+xxx           4          21555284        22970821        1415537    -                                                 -                              -
+yyy           1          496377          525680          29303      -                                                 -                              -
+yyy           7          478173          507408          29235      -                                                 -                              -`
+
+	expected := []exporter.PartitionInfo{
+		{
+			Topic:           "xxx",
+			PartitionID:     "4",
+			CurrentOffset:   21555284,
+			Lag:             1415537,
+			ClientID:        "-",
+			ConsumerAddress: "-",
+		},
+		{
+			Topic:           "yyy",
+			PartitionID:     "1",
+			CurrentOffset:   496377,
+			Lag:             29303,
+			ClientID:        "-",
+			ConsumerAddress: "-",
+		},
+		{
+			Topic:           "yyy",
+			PartitionID:     "7",
+			CurrentOffset:   478173,
+			Lag:             29235,
+			ClientID:        "-",
+			ConsumerAddress: "-",
+		},
+	}
+
+	comparePartitionTable(t, kafka0_10_2_1Parser(), output, expected)
+	comparePartitionTable(t, DefaultParser(), output, expected)
+}
+
 func TestParsePartitionTableForKafkaVersion0_10_0_1(t *T) {
 	output := `GROUP                          TOPIC                          PARTITION  CURRENT-OFFSET  LOG-END-OFFSET  LAG             OWNER
 foobar-consumer topic-A                      2          12345200        12345200        0               foobar-consumer-1-StreamThread-1-consumer_/192.168.1.1

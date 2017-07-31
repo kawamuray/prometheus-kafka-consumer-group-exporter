@@ -117,6 +117,14 @@ func parseLong(value string) (int64, error) {
 	return longVal, nil
 }
 
+func kafka0_10_2_1Parser() DescribeGroupParser {
+	return mustBuildNewRegexpParser(
+		regexp.MustCompile(`TOPIC\s+PARTITION\s+CURRENT-OFFSET\s+LOG-END-OFFSET\s+LAG\s+CONSUMER-ID\s+HOST\s+CLIENT-ID`),
+		// "topic", "partitionId", "currentOffset", "lag", "clientId", "consumerAddress"
+		regexp.MustCompile(`(?P<topic>[a-zA-Z0-9\\._\\-]+)\s+(?P<partitionId>\d+)\s+(?P<currentOffset>\d+)\s+\d+\s+(?P<lag>\d+)\s+(?P<consumerId>\S+)\s+(?P<consumerAddress>\S+)\s+(?P<clientId>\S+)`),
+	)
+}
+
 func kafka0_10_0_1Parser() DescribeGroupParser {
 	return mustBuildNewRegexpParser(
 		regexp.MustCompile(`GROUP\s+TOPIC\s+PARTITION\s+CURRENT-OFFSET\s+LOG-END-OFFSET\s+LAG\s+OWNER`),
