@@ -88,9 +88,10 @@ func parseClientIDAndConsumerAddress(clientIDAndConsumerAddress string) (string,
 	return clientIDAndConsumerAddress[:splitPoint], clientIDAndConsumerAddress[splitPoint+len(Separator):]
 }
 
-func parseLong(value string) int64 {
+func parseLong(what, value string) int64 {
 	longVal, err := strconv.ParseInt(value, 10, 64)
 	if err != nil {
+		log.Warn("unable to parse int for '%s'. String: %s", what, value)
 		return -1
 	}
 	return longVal
@@ -106,8 +107,8 @@ func parsePartitionInfo(line string) (*exporter.PartitionInfo, error) {
 	partitionInfo := &exporter.PartitionInfo{
 		Topic:           fields[1],
 		PartitionID:     fields[2],
-		CurrentOffset:   parseLong(fields[3]),
-		Lag:             parseLong(fields[5]),
+		CurrentOffset:   parseLong("CurrentOffset", fields[3]),
+		Lag:             parseLong("Lag", fields[5]),
 		ClientID:        clientID,
 		ConsumerAddress: consumerAddress,
 	}
