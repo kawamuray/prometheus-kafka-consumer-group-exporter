@@ -1,5 +1,6 @@
 prometheus-kafka-consumer-group-exporter
 ========================================
+[![Build Status](https://secure.travis-ci.org/kawamuray/prometheus-kafka-consumer-group-exporter.png?branch=master)](http://travis-ci.org/kawamuray/prometheus-kafka-consumer-group-exporter) [![Go Report Card](https://goreportcard.com/badge/github.com/kawamuray/prometheus-kafka-consumer-group-exporter)](https://goreportcard.com/report/github.com/kawamuray/prometheus-kafka-consumer-group-exporter) [![GoDoc](https://godoc.org/github.com/kawamuray/prometheus-kafka-consumer-group-exporter?status.svg)](https://godoc.org/github.com/kawamuray/prometheus-kafka-consumer-group-exporter)
 
 A [prometheus](https://prometheus.io/) exporter for Kafka's consumer group
 information. For other metrics from Kafka, have a look at the [JMX
