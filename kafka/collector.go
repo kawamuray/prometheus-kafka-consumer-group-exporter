@@ -129,13 +129,13 @@ func parsePartitionInfo(line string) (*exporter.PartitionInfo, error) {
 	return partitionInfo, nil
 }
 
-func parsePartitionOutput(output string) ([]*exporter.PartitionInfo, error) {
+func parsePartitionOutput(output string) ([]exporter.PartitionInfo, error) {
 	if strings.Contains(output, "java.lang.RuntimeException") {
 		return nil, fmt.Errorf("Got runtime error when executing script. Output: %s", output)
 	}
 
 	lines := strings.Split(output, "\n")[1:] /* discard header line */
-	partitionInfos := make([]*exporter.PartitionInfo, 0, len(lines))
+	partitionInfos := make([]exporter.PartitionInfo, 0, len(lines))
 	for _, line := range lines {
 		if line == "" {
 			continue
@@ -146,7 +146,7 @@ func parsePartitionOutput(output string) ([]*exporter.PartitionInfo, error) {
 			log.Warn(errMsg)
 			return nil, errors.New(errMsg)
 		}
-		partitionInfos = append(partitionInfos, partitionInfo)
+		partitionInfos = append(partitionInfos, *partitionInfo)
 	}
 
 	if len(partitionInfos) == 0 {
@@ -158,7 +158,7 @@ func parsePartitionOutput(output string) ([]*exporter.PartitionInfo, error) {
 
 // DescribeGroup returns current state of all partitions subscribed to by a
 // consumer group.
-func (col *ConsumerGroupsCommandClient) DescribeGroup(ctx context.Context, group string) ([]*exporter.PartitionInfo, error) {
+func (col *ConsumerGroupsCommandClient) DescribeGroup(ctx context.Context, group string) ([]exporter.PartitionInfo, error) {
 	output, err := col.execConsumerGroupCommand(ctx, "--describe", "--group", group)
 	if err != nil {
 		return nil, err

@@ -40,7 +40,7 @@ func TestFanOutGroupsListing(t *testing.T) {
 
 func TestFanOutDescribeGroup(t *testing.T) {
 	slowGroupLister := &mocks.ConsumerGroupsCommandClient{
-		DescribeGroupFn: func(group string) ([]*exporter.PartitionInfo, error) {
+		DescribeGroupFn: func(group string) ([]exporter.PartitionInfo, error) {
 			return nil, nil
 		},
 	}

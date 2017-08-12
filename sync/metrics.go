@@ -93,7 +93,7 @@ func (f *FanInConsumerGroupInfoClient) groupsLoop() {
 // DescribeGroup calls f.Delegate.DescribeGroup(). If multiple overlapping
 // calls to this function with the same parameters are made, a single call will
 // be made to the f.Delegate.
-func (f *FanInConsumerGroupInfoClient) DescribeGroup(ctx context.Context, group string) ([]*exporter.PartitionInfo, error) {
+func (f *FanInConsumerGroupInfoClient) DescribeGroup(ctx context.Context, group string) ([]exporter.PartitionInfo, error) {
 	f.initDescribeChan.Do(func() {
 		f.describeChan = make(chan describeRequest)
 		go f.genericDescribeLoop()
@@ -115,7 +115,7 @@ type describeRequest struct {
 	ctx    context.Context
 }
 type describeResult struct {
-	partitions []*exporter.PartitionInfo
+	partitions []exporter.PartitionInfo
 	err        error
 }
 

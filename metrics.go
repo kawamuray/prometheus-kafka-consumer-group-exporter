@@ -16,5 +16,5 @@ type PartitionInfo struct {
 // for their stats.
 type ConsumerGroupInfoClient interface {
 	Groups(ctx context.Context) ([]string, error)
-	DescribeGroup(ctx context.Context, group string) ([]*PartitionInfo, error)
+	DescribeGroup(ctx context.Context, group string) ([]PartitionInfo, error)
 }

@@ -14,7 +14,7 @@ type ConsumerGroupsCommandClient struct {
 	GroupsFn         func() ([]string, error)
 	GroupInvocations int
 
-	DescribeGroupFn          func(group string) ([]*exporter.PartitionInfo, error)
+	DescribeGroupFn          func(group string) ([]exporter.PartitionInfo, error)
 	DescribeGroupInvocations int
 }
 
@@ -26,7 +26,7 @@ func (col *ConsumerGroupsCommandClient) Groups(_ context.Context) ([]string, err
 
 // DescribeGroup returns a single fake partition for the group that Groups
 // returns. For other consumer groups it returns an error.
-func (col *ConsumerGroupsCommandClient) DescribeGroup(_ context.Context, group string) ([]*exporter.PartitionInfo, error) {
+func (col *ConsumerGroupsCommandClient) DescribeGroup(_ context.Context, group string) ([]exporter.PartitionInfo, error) {
 	col.DescribeGroupInvocations++
 	return col.DescribeGroupFn(group)
 }
@@ -39,8 +39,8 @@ func NewBasicConsumerGroupsCommandClient() *ConsumerGroupsCommandClient {
 		GroupsFn: func() ([]string, error) {
 			return []string{mockGroupName}, nil
 		},
-		DescribeGroupFn: func(group string) ([]*exporter.PartitionInfo, error) {
-			return []*exporter.PartitionInfo{
+		DescribeGroupFn: func(group string) ([]exporter.PartitionInfo, error) {
+			return []exporter.PartitionInfo{
 				{
 					Topic:           "testtopic",
 					PartitionID:     "0",

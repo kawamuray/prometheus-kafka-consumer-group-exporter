@@ -19,7 +19,7 @@ foobar-consumer topic-A                      0          91011178        91011179
 		t.Fatal(err)
 	}
 
-	expected := []*exporter.PartitionInfo{
+	expected := []exporter.PartitionInfo{
 		{
 			Topic:           "topic-A",
 			PartitionID:     "2",
@@ -59,7 +59,7 @@ foobar-consumer, topic-A, 0, 91011145, 91011145, 0, foobar-consumer-1-StreamThre
 		t.Fatal(err)
 	}
 
-	expected := []*exporter.PartitionInfo{
+	expected := []exporter.PartitionInfo{
 		{
 			Topic:           "topic-A",
 			PartitionID:     "2",
@@ -88,7 +88,7 @@ foobar-consumer, topic-A, 0, 91011145, 91011145, 0, foobar-consumer-1-StreamThre
 
 	comparePartitionTable(t, partitions, expected)
 }
-func comparePartitionTable(t *T, values, expected []*exporter.PartitionInfo) {
+func comparePartitionTable(t *T, values, expected []exporter.PartitionInfo) {
 	if len(values) != len(expected) {
 		t.Fatal("Not same lengths. Was:", len(values), "Was:", len(expected))
 	}
@@ -97,7 +97,7 @@ func comparePartitionTable(t *T, values, expected []*exporter.PartitionInfo) {
 	}
 }
 
-func comparePartitionInfo(t *T, value, expected *exporter.PartitionInfo) {
+func comparePartitionInfo(t *T, value, expected exporter.PartitionInfo) {
 	if value, expected := value.Topic, expected.Topic; expected != value {
 		t.Error("Wrong topic. Expected:", expected, "Was:", value)
 	}
@@ -164,7 +164,7 @@ func TestKafkaPartitionExecution(t *T) {
 
 }
 
-func checkPartitionLooksSane(t *T, groupname string, partition *exporter.PartitionInfo) {
+func checkPartitionLooksSane(t *T, groupname string, partition exporter.PartitionInfo) {
 	checkFieldIsNotEmpty(t, groupname, partition.Topic, "Topic")
 	checkFieldIsNotEmpty(t, groupname, partition.PartitionID, "PartitionID")
 	checkFieldIsNotEmpty(t, groupname, partition.ClientID, "ClientID")
