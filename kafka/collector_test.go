@@ -25,6 +25,7 @@ func TestKafkaPartitionExecution(t *T) {
 	// Build consumer.
 
 	consumer := ConsumerGroupsCommandClient{
+		new(DefaultParser),
 		bootstrapServer,
 		scriptPath,
 	}
@@ -86,6 +87,7 @@ func TestKafkaDownFails(t *T) {
 	// Build consumer.
 
 	consumer := ConsumerGroupsCommandClient{
+		new(DefaultParser),
 		brokenServer,
 		scriptPath,
 	}

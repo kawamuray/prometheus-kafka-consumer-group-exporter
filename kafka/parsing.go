@@ -84,7 +84,9 @@ func parsePartitionInfo(line string) (*exporter.PartitionInfo, error) {
 	return partitionInfo, nil
 }
 
-func parsePartitionOutput(output string) ([]exporter.PartitionInfo, error) {
+type DefaultParser struct{}
+
+func (p *DefaultParser) Parse(output string) ([]exporter.PartitionInfo, error) {
 	if strings.Contains(output, "java.lang.RuntimeException") {
 		return nil, fmt.Errorf("Got runtime error when executing script. Output: %s", output)
 	}

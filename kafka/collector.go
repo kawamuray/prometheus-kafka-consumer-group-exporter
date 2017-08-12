@@ -8,9 +8,16 @@ import (
 	exporter "github.com/kawamuray/prometheus-kafka-consumer-group-exporter"
 )
 
+// DescribeGroupParser parses the output from `kafka-consumer-group.sh --describe`.
+type DescribeGroupParser interface {
+	// Parses the output from `kafka-consumer-group.sh --describe`
+	Parse(output string) ([]exporter.PartitionInfo, error)
+}
+
 // ConsumerGroupsCommandClient queries Kafka for consumer groups and their current log
 // and offset states.
 type ConsumerGroupsCommandClient struct {
+	Parser                   DescribeGroupParser
 	BootstrapServers         string
 	ConsumerGroupCommandPath string
 }
@@ -59,5 +66,5 @@ func (col *ConsumerGroupsCommandClient) DescribeGroup(ctx context.Context, group
 	if err != nil {
 		return nil, err
 	}
-	return parsePartitionOutput(output)
+	return col.Parser.Parse(output)
 }

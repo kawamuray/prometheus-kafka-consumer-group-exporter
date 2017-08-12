@@ -7,7 +7,7 @@ import (
 )
 
 func TestParsePartitionTableForKafkaVersion0_10_0_1(t *T) {
-	partitions, err := parsePartitionOutput(`GROUP                          TOPIC                          PARTITION  CURRENT-OFFSET  LOG-END-OFFSET  LAG             OWNER
+	partitions, err := new(DefaultParser).Parse(`GROUP                          TOPIC                          PARTITION  CURRENT-OFFSET  LOG-END-OFFSET  LAG             OWNER
 foobar-consumer topic-A                      2          12345200        12345200        0               foobar-consumer-1-StreamThread-1-consumer_/192.168.1.1
 foobar-consumer topic-A                      1          45678335        45678337        2               foobar-consumer-1-StreamThread-1-consumer_/192.168.1.2
 foobar-consumer topic-A                      0          91011178        91011179        1               foobar-consumer-1-StreamThread-1-consumer_/192.168.1.3`)
@@ -47,7 +47,7 @@ foobar-consumer topic-A                      0          91011178        91011179
 }
 
 func TestParsePartitionTableForKafkaVersion0_9_0_1(t *T) {
-	partitions, err := parsePartitionOutput(`GROUP, TOPIC, PARTITION, CURRENT OFFSET, LOG END OFFSET, LAG, OWNER
+	partitions, err := new(DefaultParser).Parse(`GROUP, TOPIC, PARTITION, CURRENT OFFSET, LOG END OFFSET, LAG, OWNER
 foobar-consumer, topic-A, 2, 12344967, 12344973, 6, foobar-consumer-1-StreamThread-1-consumer_/192.168.1.1
 foobar-consumer, topic-A, 1, 45678117, 45678117, 0, foobar-consumer-1-StreamThread-1-consumer_/192.168.1.2
 foobar-consumer, topic-A, 0, 91011145, 91011145, 0, foobar-consumer-1-StreamThread-1-consumer_/192.168.1.3`)
@@ -130,7 +130,7 @@ java.lang.RuntimeException: Request GROUP_COORDINATOR failed on brokers List(loc
 	at kafka.admin.ConsumerGroupCommand.main(ConsumerGroupCommand.scala)
 
 `
-	if _, err := parsePartitionOutput(cannotConnectOutput); err == nil {
+	if _, err := new(DefaultParser).Parse(cannotConnectOutput); err == nil {
 		t.Error("Expected to get an error due to internal error in Kafka script.")
 	}
 }
@@ -149,7 +149,7 @@ java.lang.RuntimeException: Request METADATA failed on brokers List(localhost:90
 	at kafka.admin.ConsumerGroupCommand.main(ConsumerGroupCommand.scala)
 
 `
-	if _, err := parseGroups(cannotConnectOutput); err == nil {
+	if _, err := new(DefaultParser).Parse(cannotConnectOutput); err == nil {
 		t.Error("Expected to get an error due to internal error in Kafka script.")
 	}
 }
