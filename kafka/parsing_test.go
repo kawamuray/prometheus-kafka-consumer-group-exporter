@@ -7,14 +7,10 @@ import (
 )
 
 func TestParsePartitionTableForKafkaVersion0_10_0_1(t *T) {
-	partitions, err := new(DefaultParser).Parse(`GROUP                          TOPIC                          PARTITION  CURRENT-OFFSET  LOG-END-OFFSET  LAG             OWNER
+	output := `GROUP                          TOPIC                          PARTITION  CURRENT-OFFSET  LOG-END-OFFSET  LAG             OWNER
 foobar-consumer topic-A                      2          12345200        12345200        0               foobar-consumer-1-StreamThread-1-consumer_/192.168.1.1
 foobar-consumer topic-A                      1          45678335        45678337        2               foobar-consumer-1-StreamThread-1-consumer_/192.168.1.2
-foobar-consumer topic-A                      0          91011178        91011179        1               foobar-consumer-1-StreamThread-1-consumer_/192.168.1.3`)
-
-	if err != nil {
-		t.Fatal(err)
-	}
+foobar-consumer topic-A                      0          91011178        91011179        1               foobar-consumer-1-StreamThread-1-consumer_/192.168.1.3`
 
 	expected := []exporter.PartitionInfo{
 		{
@@ -43,18 +39,15 @@ foobar-consumer topic-A                      0          91011178        91011179
 		},
 	}
 
-	comparePartitionTable(t, partitions, expected)
+	comparePartitionTable(t, kafka0_10_0_1Parser(), output, expected)
+	comparePartitionTable(t, DefaultParser(), output, expected)
 }
 
 func TestParsePartitionTableForKafkaVersion0_9_0_1(t *T) {
-	partitions, err := new(DefaultParser).Parse(`GROUP, TOPIC, PARTITION, CURRENT OFFSET, LOG END OFFSET, LAG, OWNER
+	output := `GROUP, TOPIC, PARTITION, CURRENT OFFSET, LOG END OFFSET, LAG, OWNER
 foobar-consumer, topic-A, 2, 12344967, 12344973, 6, foobar-consumer-1-StreamThread-1-consumer_/192.168.1.1
 foobar-consumer, topic-A, 1, 45678117, 45678117, 0, foobar-consumer-1-StreamThread-1-consumer_/192.168.1.2
-foobar-consumer, topic-A, 0, 91011145, 91011145, 0, foobar-consumer-1-StreamThread-1-consumer_/192.168.1.3`)
-
-	if err != nil {
-		t.Fatal(err)
-	}
+foobar-consumer, topic-A, 0, 91011145, 91011145, 0, foobar-consumer-1-StreamThread-1-consumer_/192.168.1.3`
 
 	expected := []exporter.PartitionInfo{
 		{
@@ -83,35 +76,41 @@ foobar-consumer, topic-A, 0, 91011145, 91011145, 0, foobar-consumer-1-StreamThre
 		},
 	}
 
-	comparePartitionTable(t, partitions, expected)
+	comparePartitionTable(t, kafka0_9_0_1Parser(), output, expected)
+	comparePartitionTable(t, DefaultParser(), output, expected)
 }
-func comparePartitionTable(t *T, values, expected []exporter.PartitionInfo) {
+func comparePartitionTable(t *T, parser DescribeGroupParser, output string, expected []exporter.PartitionInfo) {
+	values, err := parser.Parse(output)
+	if err != nil {
+		t.Fatal("Failed parsing. Parser:", parser, "Error:", err)
+	}
+
 	if len(values) != len(expected) {
 		t.Fatal("Not same lengths. Was:", len(values), "Was:", len(expected))
 	}
 	for i, value := range values {
-		comparePartitionInfo(t, value, expected[i])
+		comparePartitionInfo(t, parser, value, expected[i])
 	}
 }
 
-func comparePartitionInfo(t *T, value, expected exporter.PartitionInfo) {
+func comparePartitionInfo(t *T, parser DescribeGroupParser, value, expected exporter.PartitionInfo) {
 	if value, expected := value.Topic, expected.Topic; expected != value {
-		t.Error("Wrong topic. Expected:", expected, "Was:", value)
+		t.Error("Wrong topic. Parser:", parser, "Expected:", expected, "Was:", value)
 	}
 	if value, expected := value.PartitionID, expected.PartitionID; expected != value {
-		t.Error("Wrong PartitionID. Expected:", expected, "Was:", value)
+		t.Error("Wrong PartitionID. Parser:", parser, "Expected:", expected, "Was:", value)
 	}
 	if value, expected := value.CurrentOffset, expected.CurrentOffset; expected != value {
-		t.Error("Wrong CurrentOffset. Expected:", expected, "Was:", value)
+		t.Error("Wrong CurrentOffset. Parser:", parser, "Expected:", expected, "Was:", value)
 	}
 	if value, expected := value.Lag, expected.Lag; expected != value {
-		t.Error("Wrong Lag. Expected:", expected, "Was:", value)
+		t.Error("Wrong Lag. Parser:", parser, "Expected:", expected, "Was:", value)
 	}
 	if value, expected := value.ClientID, expected.ClientID; expected != value {
-		t.Error("Wrong ClientID. Expected:", expected, "Was:", value)
+		t.Error("Wrong ClientID. Parser:", parser, "Expected:", expected, "Was:", value)
 	}
 	if value, expected := value.ConsumerAddress, expected.ConsumerAddress; expected != value {
-		t.Error("Wrong ConsumerAddress. Expected:", expected, "Was:", value)
+		t.Error("Wrong ConsumerAddress. Parser:", parser, "Expected:", expected, "Was:", value)
 	}
 }
 
@@ -130,7 +129,7 @@ java.lang.RuntimeException: Request GROUP_COORDINATOR failed on brokers List(loc
 	at kafka.admin.ConsumerGroupCommand.main(ConsumerGroupCommand.scala)
 
 `
-	if _, err := new(DefaultParser).Parse(cannotConnectOutput); err == nil {
+	if _, err := DefaultParser().Parse(cannotConnectOutput); err == nil {
 		t.Error("Expected to get an error due to internal error in Kafka script.")
 	}
 }
@@ -149,7 +148,7 @@ java.lang.RuntimeException: Request METADATA failed on brokers List(localhost:90
 	at kafka.admin.ConsumerGroupCommand.main(ConsumerGroupCommand.scala)
 
 `
-	if _, err := new(DefaultParser).Parse(cannotConnectOutput); err == nil {
+	if _, err := DefaultParser().Parse(cannotConnectOutput); err == nil {
 		t.Error("Expected to get an error due to internal error in Kafka script.")
 	}
 }

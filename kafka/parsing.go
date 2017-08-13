@@ -11,11 +11,6 @@ import (
 	"github.com/prometheus/common/log"
 )
 
-// Fields separator is different between kafka versions
-// 0.9.X  => ", "
-// 0.10.X => \s+
-var consumerGroupCommandDescribeOutputSeparatorRegexp = regexp.MustCompile(`,?\s+`)
-
 func parseGroups(output string) ([]string, error) {
 	if strings.Contains(output, "java.lang.RuntimeException") {
 		return nil, fmt.Errorf("Got runtime error when executing script. Output: %s", output)
@@ -32,13 +27,86 @@ func parseGroups(output string) ([]string, error) {
 	return groups, nil
 }
 
-func parseClientIDAndConsumerAddress(clientIDAndConsumerAddress string) (string, string) {
-	const Separator = "_/"
-	splitPoint := strings.LastIndex(clientIDAndConsumerAddress, Separator)
-	if splitPoint == -1 {
-		return clientIDAndConsumerAddress, ""
+type regexpParser struct {
+	// header is the expected format of the first line. Used as fingerprint to distinguish if this parser is the right one.
+	header *regexp.Regexp
+	// line is the regexp used for the remaining lines of the output (as long as Header matched correctly).
+	line *regexp.Regexp
+	//
+	indexByName map[string]int
+}
+
+func newRegexpParser(header, line *regexp.Regexp) (*regexpParser, error) {
+	indexByName := make(map[string]int)
+	for i, name := range line.SubexpNames() {
+		indexByName[name] = i
 	}
-	return clientIDAndConsumerAddress[:splitPoint], clientIDAndConsumerAddress[splitPoint+len(Separator):]
+
+	for _, field := range []string{"topic", "partitionId", "currentOffset", "lag", "clientId", "consumerAddress"} {
+		if _, exists := indexByName[field]; !exists {
+			return nil, fmt.Errorf("line regexp missing '%s' capturing group", field)
+		}
+	}
+
+	return &regexpParser{header.Copy(), line.Copy(), indexByName}, nil
+}
+
+func (p *regexpParser) Parse(output string) ([]exporter.PartitionInfo, error) {
+	lines := strings.Split(output, "\n")
+	if len(lines) == 0 {
+		return nil, errors.New("empty output")
+	}
+	headerLine := lines[0]
+	dataLines := lines[1:]
+
+	if !p.header.MatchString(headerLine) {
+		return nil, errors.New("incorrect header")
+	}
+
+	partitions := make([]exporter.PartitionInfo, 0, len(dataLines))
+	var err error
+	var partition *exporter.PartitionInfo
+	for _, line := range dataLines {
+		partition, err = p.parseLine(line)
+		if err != nil {
+			break
+		}
+		partitions = append(partitions, *partition)
+	}
+	return partitions, err
+}
+
+func (p *regexpParser) String() string {
+	return fmt.Sprintf("regexpParser{header: `%s`, line: `%s`}", p.header, p.line)
+}
+
+func (p *regexpParser) parseLine(line string) (*exporter.PartitionInfo, error) {
+	matches := p.line.FindStringSubmatch(line)
+
+	var err error
+
+	var currentOffset int64
+	currentOffset, err = parseLong(matches[p.indexByName["currentOffset"]])
+	if err != nil {
+		log.Warn("unable to parse int for current offset. line: %s", line)
+	}
+
+	var lag int64
+	lag, err = parseLong(matches[p.indexByName["lag"]])
+	if err != nil {
+		log.Warn("unable to parse int for lag. line: %s", line)
+	}
+
+	partitionInfo := &exporter.PartitionInfo{
+		Topic:           matches[p.indexByName["topic"]],
+		PartitionID:     matches[p.indexByName["partitionId"]],
+		CurrentOffset:   currentOffset,
+		Lag:             lag,
+		ClientID:        matches[p.indexByName["clientId"]],
+		ConsumerAddress: matches[p.indexByName["consumerAddress"]],
+	}
+
+	return partitionInfo, nil
 }
 
 func parseLong(value string) (int64, error) {
@@ -49,66 +117,61 @@ func parseLong(value string) (int64, error) {
 	return longVal, nil
 }
 
-const expectedPartitionInfoFields = 7
-
-func parsePartitionInfo(line string) (*exporter.PartitionInfo, error) {
-	fields := consumerGroupCommandDescribeOutputSeparatorRegexp.Split(line, -1)
-	if len(fields) != expectedPartitionInfoFields {
-		return nil, fmt.Errorf("incorrect number of fields. Expected: %d Was: %d Line: %s", expectedPartitionInfoFields, len(fields), line)
-	}
-
-	var err error
-
-	var currentOffset int64
-	currentOffset, err = parseLong(fields[3])
-	if err != nil {
-		log.Warn("unable to parse int for current offset. line: %s", line)
-	}
-
-	var lag int64
-	lag, err = parseLong(fields[5])
-	if err != nil {
-		log.Warn("unable to parse int for lag. line: %s", line)
-	}
-
-	clientID, consumerAddress := parseClientIDAndConsumerAddress(fields[6])
-	partitionInfo := &exporter.PartitionInfo{
-		Topic:           fields[1],
-		PartitionID:     fields[2],
-		CurrentOffset:   currentOffset,
-		Lag:             lag,
-		ClientID:        clientID,
-		ConsumerAddress: consumerAddress,
-	}
-
-	return partitionInfo, nil
+func kafka0_10_0_1Parser() DescribeGroupParser {
+	return mustBuildNewRegexpParser(
+		regexp.MustCompile(`GROUP\s+TOPIC\s+PARTITION\s+CURRENT-OFFSET\s+LOG-END-OFFSET\s+LAG\s+OWNER`),
+		regexp.MustCompile(`.+\s+(?P<topic>[a-zA-Z0-9\\._\\-]+)\s+(?P<partitionId>\d+)\s+(?P<currentOffset>\d+)\s+\d+\s+(?P<lag>\d+)\s+(?P<clientId>\S+)_/(?P<consumerAddress>.+)`),
+	)
 }
 
-type DefaultParser struct{}
+func kafka0_9_0_1Parser() DescribeGroupParser {
+	return mustBuildNewRegexpParser(
+		regexp.MustCompile("GROUP, TOPIC, PARTITION, CURRENT OFFSET, LOG END OFFSET, LAG, OWNER"),
+		regexp.MustCompile(`[^,]+, (?P<topic>[a-zA-Z0-9\\._\\-]+), (?P<partitionId>\d+), (?P<currentOffset>\d+), \d+, (?P<lag>\d+), (?P<clientId>.+)_/(?P<consumerAddress>.+)`),
+	)
+}
 
-func (p *DefaultParser) Parse(output string) ([]exporter.PartitionInfo, error) {
-	if strings.Contains(output, "java.lang.RuntimeException") {
-		return nil, fmt.Errorf("Got runtime error when executing script. Output: %s", output)
+func mustBuildNewRegexpParser(header, line *regexp.Regexp) *regexpParser {
+	parser, err := newRegexpParser(header, line)
+	if err != nil {
+		log.Fatal(err)
 	}
+	return parser
+}
 
-	lines := strings.Split(output, "\n")[1:] /* discard header line */
-	partitionInfos := make([]exporter.PartitionInfo, 0, len(lines))
-	for _, line := range lines {
-		if line == "" {
-			continue
+// DefaultParser returns a DelegatingParser consisting of all formats known.
+func DefaultParser() DescribeGroupParser {
+	return &DelegatingParser{
+		[]DescribeGroupParser{
+			kafka0_9_0_1Parser(),
+			kafka0_10_0_1Parser(),
+			kafka0_10_2_1Parser(),
+		},
+	}
+}
+
+// DelegatingParser is a parser that tries multiple parser returning the first
+// succesful parsed result.
+type DelegatingParser struct {
+	Parsers []DescribeGroupParser
+}
+
+// Parse parses the output. It tries each Parser in order, returning an error
+// if all fails.
+func (p *DelegatingParser) Parse(output string) ([]exporter.PartitionInfo, error) {
+	var err error
+	var partitions []exporter.PartitionInfo
+
+	for _, parser := range p.Parsers {
+		partitions, err = parser.Parse(output)
+		if err == nil {
+			return partitions, err
 		}
-		partitionInfo, err := parsePartitionInfo(line)
-		if err != nil {
-			errMsg := fmt.Sprintf("failed to parse a line of group description: '%s'. Error: %s", line, err)
-			log.Warn(errMsg)
-			return nil, errors.New(errMsg)
-		}
-		partitionInfos = append(partitionInfos, *partitionInfo)
 	}
 
-	if len(partitionInfos) == 0 {
-		return nil, errors.New("could not find any partitions")
-	}
+	return nil, errors.New("no parser could parse the output")
+}
 
-	return partitionInfos, nil
+func (p *DelegatingParser) String() string {
+	return "DefaultParser"
 }
