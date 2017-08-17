@@ -117,27 +117,25 @@ func parseLong(value string) (int64, error) {
 	return longVal, nil
 }
 
-func kafka0_10_2_1Parser() DescribeGroupParser {
-	return mustBuildNewRegexpParser(
+// Parsers for "describe group" output.
+var (
+	// Parser for Kafka 0.10.2.1. Since we are unsure if the column widths are dynamic, we are using `\s+` for delimiters.
+	kafka0_10_2_1DescribeGroupParser = mustBuildNewRegexpParser(
 		regexp.MustCompile(`TOPIC\s+PARTITION\s+CURRENT-OFFSET\s+LOG-END-OFFSET\s+LAG\s+CONSUMER-ID\s+HOST\s+CLIENT-ID`),
 		// "topic", "partitionId", "currentOffset", "lag", "clientId", "consumerAddress"
 		regexp.MustCompile(`(?P<topic>[a-zA-Z0-9\\._\\-]+)\s+(?P<partitionId>\d+)\s+(?P<currentOffset>\d+)\s+\d+\s+(?P<lag>\d+)\s+(?P<consumerId>\S+)\s+(?P<consumerAddress>\S+)\s+(?P<clientId>\S+)`),
 	)
-}
 
-func kafka0_10_0_1Parser() DescribeGroupParser {
-	return mustBuildNewRegexpParser(
+	// Parser for Kafka 0.10.0.1. Since we are unsure if the column widths are dynamic, we are using `\s+` for delimiters.
+	kafka0_10_0_1DescribeGroupParser = mustBuildNewRegexpParser(
 		regexp.MustCompile(`GROUP\s+TOPIC\s+PARTITION\s+CURRENT-OFFSET\s+LOG-END-OFFSET\s+LAG\s+OWNER`),
 		regexp.MustCompile(`.+\s+(?P<topic>[a-zA-Z0-9\\._\\-]+)\s+(?P<partitionId>\d+)\s+(?P<currentOffset>\d+)\s+\d+\s+(?P<lag>\d+)\s+(?P<clientId>\S+)_/(?P<consumerAddress>.+)`),
 	)
-}
-
-func kafka0_9_0_1Parser() DescribeGroupParser {
-	return mustBuildNewRegexpParser(
+	kafka0_9_0_1DescribeGroupParser = mustBuildNewRegexpParser(
 		regexp.MustCompile("GROUP, TOPIC, PARTITION, CURRENT OFFSET, LOG END OFFSET, LAG, OWNER"),
 		regexp.MustCompile(`[^,]+, (?P<topic>[a-zA-Z0-9\\._\\-]+), (?P<partitionId>\d+), (?P<currentOffset>\d+), \d+, (?P<lag>\d+), (?P<clientId>.+)_/(?P<consumerAddress>.+)`),
 	)
-}
+)
 
 func mustBuildNewRegexpParser(header, line *regexp.Regexp) *regexpParser {
 	parser, err := newRegexpParser(header, line)
@@ -151,9 +149,9 @@ func mustBuildNewRegexpParser(header, line *regexp.Regexp) *regexpParser {
 func DefaultParser() DescribeGroupParser {
 	return &DelegatingParser{
 		[]DescribeGroupParser{
-			kafka0_9_0_1Parser(),
-			kafka0_10_0_1Parser(),
-			kafka0_10_2_1Parser(),
+			kafka0_9_0_1DescribeGroupParser,
+			kafka0_10_0_1DescribeGroupParser,
+			kafka0_10_2_1DescribeGroupParser,
 		},
 	}
 }

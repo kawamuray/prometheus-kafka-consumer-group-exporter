@@ -39,8 +39,8 @@ yyy           7          478173          507408          29235      -           
 		},
 	}
 
-	comparePartitionTable(t, kafka0_10_2_1Parser(), output, expected)
 	comparePartitionTable(t, DefaultParser(), output, expected)
+	comparePartitionTable(t, kafka0_10_2_1DescribeGroupParser, output, expected)
 }
 
 func TestParsePartitionTableForKafkaVersion0_10_0_1(t *T) {
@@ -76,8 +76,8 @@ foobar-consumer topic-A                      0          91011178        91011179
 		},
 	}
 
-	comparePartitionTable(t, kafka0_10_0_1Parser(), output, expected)
 	comparePartitionTable(t, DefaultParser(), output, expected)
+	comparePartitionTable(t, kafka0_10_0_1DescribeGroupParser, output, expected)
 }
 
 func TestParsePartitionTableForKafkaVersion0_9_0_1(t *T) {
@@ -113,9 +113,10 @@ foobar-consumer, topic-A, 0, 91011145, 91011145, 0, foobar-consumer-1-StreamThre
 		},
 	}
 
-	comparePartitionTable(t, kafka0_9_0_1Parser(), output, expected)
 	comparePartitionTable(t, DefaultParser(), output, expected)
+	comparePartitionTable(t, kafka0_9_0_1DescribeGroupParser, output, expected)
 }
+
 func comparePartitionTable(t *T, parser DescribeGroupParser, output string, expected []exporter.PartitionInfo) {
 	values, err := parser.Parse(output)
 	if err != nil {
