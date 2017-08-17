@@ -57,7 +57,7 @@ func main() {
 		bootstrapServers := c.Args().Get(0)
 
 		kafkaClient := kafka.ConsumerGroupsCommandClient{
-			Parser:                   kafka.DefaultParser(),
+			Parser:                   kafka.DefaultDescribeGroupParser(),
 			BootstrapServers:         bootstrapServers,
 			ConsumerGroupCommandPath: c.String("consumer-group-command-path"),
 		}

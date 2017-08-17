@@ -145,8 +145,8 @@ func mustBuildNewRegexpParser(header, line *regexp.Regexp) *regexpParser {
 	return parser
 }
 
-// DefaultParser returns a DelegatingParser consisting of all formats known.
-func DefaultParser() DescribeGroupParser {
+// DefaultDescribeGroupParser returns a DelegatingParser consisting of all formats known.
+func DefaultDescribeGroupParser() *DelegatingParser {
 	return &DelegatingParser{
 		[]DescribeGroupParser{
 			kafka0_9_0_1DescribeGroupParser,

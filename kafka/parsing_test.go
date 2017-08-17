@@ -39,8 +39,8 @@ yyy           7          478173          507408          29235      -           
 		},
 	}
 
-	comparePartitionTable(t, DefaultParser(), output, expected)
 	comparePartitionTable(t, kafka0_10_2_1DescribeGroupParser, output, expected)
+	comparePartitionTable(t, DefaultDescribeGroupParser(), output, expected)
 }
 
 func TestParsePartitionTableForKafkaVersion0_10_0_1(t *T) {
@@ -76,8 +76,8 @@ foobar-consumer topic-A                      0          91011178        91011179
 		},
 	}
 
-	comparePartitionTable(t, DefaultParser(), output, expected)
 	comparePartitionTable(t, kafka0_10_0_1DescribeGroupParser, output, expected)
+	comparePartitionTable(t, DefaultDescribeGroupParser(), output, expected)
 }
 
 func TestParsePartitionTableForKafkaVersion0_9_0_1(t *T) {
@@ -113,8 +113,8 @@ foobar-consumer, topic-A, 0, 91011145, 91011145, 0, foobar-consumer-1-StreamThre
 		},
 	}
 
-	comparePartitionTable(t, DefaultParser(), output, expected)
 	comparePartitionTable(t, kafka0_9_0_1DescribeGroupParser, output, expected)
+	comparePartitionTable(t, DefaultDescribeGroupParser(), output, expected)
 }
 
 func comparePartitionTable(t *T, parser DescribeGroupParser, output string, expected []exporter.PartitionInfo) {
@@ -167,7 +167,7 @@ java.lang.RuntimeException: Request GROUP_COORDINATOR failed on brokers List(loc
 	at kafka.admin.ConsumerGroupCommand.main(ConsumerGroupCommand.scala)
 
 `
-	if _, err := DefaultParser().Parse(cannotConnectOutput); err == nil {
+	if _, err := DefaultDescribeGroupParser().Parse(cannotConnectOutput); err == nil {
 		t.Error("Expected to get an error due to internal error in Kafka script.")
 	}
 }
@@ -186,7 +186,7 @@ java.lang.RuntimeException: Request METADATA failed on brokers List(localhost:90
 	at kafka.admin.ConsumerGroupCommand.main(ConsumerGroupCommand.scala)
 
 `
-	if _, err := DefaultParser().Parse(cannotConnectOutput); err == nil {
+	if _, err := DefaultDescribeGroupParser().Parse(cannotConnectOutput); err == nil {
 		t.Error("Expected to get an error due to internal error in Kafka script.")
 	}
 }
