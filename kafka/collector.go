@@ -11,7 +11,7 @@ import (
 // DescribeGroupParser parses the output from `kafka-consumer-group.sh --describe`.
 type DescribeGroupParser interface {
 	// Parses the output from `kafka-consumer-group.sh --describe`
-	Parse(output string) ([]exporter.PartitionInfo, error)
+	Parse(output CommandOutput) ([]exporter.PartitionInfo, error)
 }
 
 // ConsumerGroupsCommandClient queries Kafka for consumer groups and their current log
@@ -22,15 +22,22 @@ type ConsumerGroupsCommandClient struct {
 	ConsumerGroupCommandPath string
 }
 
-func (col *ConsumerGroupsCommandClient) execConsumerGroupCommand(ctx context.Context, args ...string) (string, error) {
+// CommandOutput is the output from a DescribeGroupParser.
+type CommandOutput struct {
+	Stdout string
+	Stderr string
+}
+
+func (col *ConsumerGroupsCommandClient) execConsumerGroupCommand(ctx context.Context, args ...string) (output CommandOutput, err error) {
 	allArgs := append([]string{"--new-consumer", "--bootstrap-server", col.BootstrapServers}, args...)
 	cmd := exec.Command(col.ConsumerGroupCommandPath, allArgs...)
 
-	var b bytes.Buffer
-	cmd.Stdout = &b
-	cmd.Stderr = &b
-	if err := cmd.Start(); err != nil {
-		return "", err
+	var stdout bytes.Buffer
+	var stderr bytes.Buffer
+	cmd.Stdout = &stdout
+	cmd.Stderr = &stderr
+	if err = cmd.Start(); err != nil {
+		return
 	}
 
 	quitChan := make(chan struct{})
@@ -44,10 +51,13 @@ func (col *ConsumerGroupsCommandClient) execConsumerGroupCommand(ctx context.Con
 	}()
 
 	// `err` will be non-nil if the timeout function killed it.
-	err := cmd.Wait()
+	err = cmd.Wait()
 
 	close(quitChan)
-	return string(b.Bytes()), err
+
+	output.Stdout = string(stdout.Bytes())
+	output.Stderr = string(stderr.Bytes())
+	return
 }
 
 // Groups returns a list of the Kafka consumer groups.

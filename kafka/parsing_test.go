@@ -7,10 +7,12 @@ import (
 )
 
 func TestParsingPartitionTableForKafkaVersion0_10_2_1(t *T) {
-	output := `TOPIC                          PARTITION  CURRENT-OFFSET  LOG-END-OFFSET  LAG        CONSUMER-ID                                       HOST                           CLIENT-ID
+	output := CommandOutput{
+		Stdout: `TOPIC                          PARTITION  CURRENT-OFFSET  LOG-END-OFFSET  LAG        CONSUMER-ID                                       HOST                           CLIENT-ID
 xxx           4          21555284        22970821        1415537    -                                                 -                              -
 yyy           1          496377          525680          29303      -                                                 -                              -
-yyy           7          478173          507408          29235      -                                                 -                              -`
+yyy           7          478173          507408          29235      -                                                 -                              -`,
+	}
 
 	expected := []exporter.PartitionInfo{
 		{
@@ -43,11 +45,13 @@ yyy           7          478173          507408          29235      -           
 	comparePartitionTable(t, DefaultDescribeGroupParser(), output, expected)
 }
 
-func TestParsePartitionTableForKafkaVersion0_10_0_1(t *T) {
-	output := `GROUP                          TOPIC                          PARTITION  CURRENT-OFFSET  LOG-END-OFFSET  LAG             OWNER
+func TestParsingPartitionTableForKafkaVersion0_10_0_1(t *T) {
+	output := CommandOutput{
+		Stdout: `GROUP                          TOPIC                          PARTITION  CURRENT-OFFSET  LOG-END-OFFSET  LAG             OWNER
 foobar-consumer topic-A                      2          12345200        12345200        0               foobar-consumer-1-StreamThread-1-consumer_/192.168.1.1
 foobar-consumer topic-A                      1          45678335        45678337        2               foobar-consumer-1-StreamThread-1-consumer_/192.168.1.2
-foobar-consumer topic-A                      0          91011178        91011179        1               foobar-consumer-1-StreamThread-1-consumer_/192.168.1.3`
+foobar-consumer topic-A                      0          91011178        91011179        1               foobar-consumer-1-StreamThread-1-consumer_/192.168.1.3`,
+	}
 
 	expected := []exporter.PartitionInfo{
 		{
@@ -81,10 +85,12 @@ foobar-consumer topic-A                      0          91011178        91011179
 }
 
 func TestParsingPartitionTableForKafkaVersion0_9_0_1(t *T) {
-	output := `GROUP, TOPIC, PARTITION, CURRENT OFFSET, LOG END OFFSET, LAG, OWNER
+	output := CommandOutput{
+		Stdout: `GROUP, TOPIC, PARTITION, CURRENT OFFSET, LOG END OFFSET, LAG, OWNER
 foobar-consumer, topic-A, 2, 12344967, 12344973, 6, foobar-consumer-1-StreamThread-1-consumer_/192.168.1.1
 foobar-consumer, topic-A, 1, 45678117, 45678117, 0, foobar-consumer-1-StreamThread-1-consumer_/192.168.1.2
-foobar-consumer, topic-A, 0, 91011145, 91011145, 0, foobar-consumer-1-StreamThread-1-consumer_/192.168.1.3`
+foobar-consumer, topic-A, 0, 91011145, 91011145, 0, foobar-consumer-1-StreamThread-1-consumer_/192.168.1.3`,
+	}
 
 	expected := []exporter.PartitionInfo{
 		{
@@ -117,7 +123,7 @@ foobar-consumer, topic-A, 0, 91011145, 91011145, 0, foobar-consumer-1-StreamThre
 	comparePartitionTable(t, DefaultDescribeGroupParser(), output, expected)
 }
 
-func comparePartitionTable(t *T, parser DescribeGroupParser, output string, expected []exporter.PartitionInfo) {
+func comparePartitionTable(t *T, parser DescribeGroupParser, output CommandOutput, expected []exporter.PartitionInfo) {
 	values, err := parser.Parse(output)
 	if err != nil {
 		t.Fatal("Failed parsing. Parser:", parser, "Error:", err)
@@ -167,7 +173,7 @@ java.lang.RuntimeException: Request GROUP_COORDINATOR failed on brokers List(loc
 	at kafka.admin.ConsumerGroupCommand.main(ConsumerGroupCommand.scala)
 
 `
-	if _, err := DefaultDescribeGroupParser().Parse(cannotConnectOutput); err == nil {
+	if _, err := DefaultDescribeGroupParser().Parse(CommandOutput{Stdout: cannotConnectOutput}); err == nil {
 		t.Error("Expected to get an error due to internal error in Kafka script.")
 	}
 }
@@ -186,7 +192,7 @@ java.lang.RuntimeException: Request METADATA failed on brokers List(localhost:90
 	at kafka.admin.ConsumerGroupCommand.main(ConsumerGroupCommand.scala)
 
 `
-	if _, err := DefaultDescribeGroupParser().Parse(cannotConnectOutput); err == nil {
+	if _, err := DefaultDescribeGroupParser().Parse(CommandOutput{Stdout: cannotConnectOutput}); err == nil {
 		t.Error("Expected to get an error due to internal error in Kafka script.")
 	}
 }

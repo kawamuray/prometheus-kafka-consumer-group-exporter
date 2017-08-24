@@ -11,12 +11,12 @@ import (
 	"github.com/prometheus/common/log"
 )
 
-func parseGroups(output string) ([]string, error) {
-	if strings.Contains(output, "java.lang.RuntimeException") {
+func parseGroups(output CommandOutput) ([]string, error) {
+	if strings.Contains(output.Stderr, "java.lang.RuntimeException") {
 		return nil, fmt.Errorf("Got runtime error when executing script. Output: %s", output)
 	}
 
-	lines := strings.Split(output, "\n")
+	lines := strings.Split(output.Stdout, "\n")
 	groups := make([]string, 0, len(lines))
 	for _, line := range lines {
 		if line != "" {
@@ -51,10 +51,10 @@ func newRegexpParser(header, line *regexp.Regexp) (*regexpParser, error) {
 	return &regexpParser{header.Copy(), line.Copy(), indexByName}, nil
 }
 
-func (p *regexpParser) Parse(output string) ([]exporter.PartitionInfo, error) {
-	lines := strings.Split(output, "\n")
+func (p *regexpParser) Parse(output CommandOutput) ([]exporter.PartitionInfo, error) {
+	lines := strings.Split(output.Stdout, "\n")
 	if len(lines) == 0 {
-		return nil, errors.New("empty output")
+		return nil, errors.New("empty output. stderr: " + output.Stderr)
 	}
 	headerLine := lines[0]
 	dataLines := lines[1:]
@@ -164,7 +164,7 @@ type DelegatingParser struct {
 
 // Parse parses the output. It tries each Parser in order, returning an error
 // if all fails.
-func (p *DelegatingParser) Parse(output string) ([]exporter.PartitionInfo, error) {
+func (p *DelegatingParser) Parse(output CommandOutput) ([]exporter.PartitionInfo, error) {
 	var err error
 	var partitions []exporter.PartitionInfo
 
