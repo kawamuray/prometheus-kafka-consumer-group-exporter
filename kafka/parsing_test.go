@@ -8,6 +8,7 @@ import (
 
 func TestParsingPartitionTableForKafkaVersion0_10_2_1(t *T) {
 	output := CommandOutput{
+		Stderr: "Note: This will only show information about consumers that use the Java consumer API (non-ZooKeeper-based consumers).\n",
 		Stdout: `TOPIC                          PARTITION  CURRENT-OFFSET  LOG-END-OFFSET  LAG        CONSUMER-ID                                       HOST                           CLIENT-ID
 xxx           4          21555284        22970821        1415537    -                                                 -                              -
 yyy           1          496377          525680          29303      -                                                 -                              -
@@ -43,6 +44,29 @@ yyy           7          478173          507408          29235      -           
 
 	comparePartitionTable(t, kafka0_10_2_1DescribeGroupParser, output, expected)
 	comparePartitionTable(t, DefaultDescribeGroupParser(), output, expected)
+}
+
+func TestParsingNoActiveMemberErrorForKafkaVersion0_10_2_1(t *T) {
+	output := CommandOutput{
+		Stderr: "Consumer group '$groupId' has no active members.\n",
+	}
+	assertErrorParsing(t, kafka0_10_2_1DescribeGroupParser, output)
+	assertErrorParsing(t, DefaultDescribeGroupParser(), output)
+}
+
+func TestParsingWhenRebalancingErrorForKafkaVersion0_10_2_1(t *T) {
+	output := CommandOutput{
+		Stderr: "Warning: Consumer group '$groupId' is rebalancing.\n",
+	}
+	assertErrorParsing(t, kafka0_10_2_1DescribeGroupParser, output)
+	assertErrorParsing(t, DefaultDescribeGroupParser(), output)
+}
+
+func assertErrorParsing(t *T, parser DescribeGroupParser, output CommandOutput) {
+	_, err := parser.Parse(output)
+	if err == nil {
+		t.Error("Expected an error.")
+	}
 }
 
 func TestParsingPartitionTableForKafkaVersion0_10_0_1(t *T) {
