@@ -79,7 +79,7 @@ func (p *PartitionInfoCollector) collectGroupsFromChan(<-chan string) {
 // c.
 func (p *PartitionInfoCollector) Collect(c chan<- prometheus.Metric) {
 	// Important that these are collected _after_ the Kafka collection below to
-	// correctly accomodate for the errors that happened during the scrape.
+	// correctly accommodate for the errors that happened during the scrape.
 	defer p.groupDescribeErrors.Collect(c)
 	defer p.groupListErrors.Collect(c)
 
