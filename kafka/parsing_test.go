@@ -50,6 +50,49 @@ yyy           7          478173          507408          29235      -           
 	})
 }
 
+func TestParsingPartitionTableForKafkaVersion0_10_1_X(t *T) {
+	output := CommandOutput{
+		Stdout: `GROUP                          TOPIC                          PARTITION  CURRENT-OFFSET  LOG-END-OFFSET  LAG             OWNER
+group1             requests                       0         1176417636761   1176419294709   1657948         consumer1_/1.1.1.5
+group1             requests                       1         1144248140115   1144249685348   1545233         consumer1_/1.1.1.18
+group1             requests                       2         1101749049926   1101751118906   2068980         consumer1_/1.1.1.23`,
+	}
+
+	expected := []exporter.PartitionInfo{
+		{
+			Topic:           "requests",
+			PartitionID:     "0",
+			CurrentOffset:   1176417636761,
+			Lag:             1657948,
+			ClientID:        "consumer1",
+			ConsumerAddress: "1.1.1.5",
+		},
+		{
+			Topic:           "requests",
+			PartitionID:     "1",
+			CurrentOffset:   1144248140115,
+			Lag:             1545233,
+			ClientID:        "consumer1",
+			ConsumerAddress: "1.1.1.18",
+		},
+		{
+			Topic:           "requests",
+			PartitionID:     "2",
+			CurrentOffset:   1101749049926,
+			Lag:             2068980,
+			ClientID:        "consumer1",
+			ConsumerAddress: "1.1.1.23",
+		},
+	}
+
+	t.Run("kafka0_10_1_XDescribeGroupParser", func(t *T) {
+		comparePartitionTable(t, kafka0_10_1DescribeGroupParser, output, expected)
+	})
+	t.Run("DefaultDescribeGroupParser", func(t *T) {
+		comparePartitionTable(t, DefaultDescribeGroupParser(), output, expected)
+	})
+}
+
 func TestParsingNoActiveMemberErrorForKafkaVersion0_10_2_1(t *T) {
 	output := CommandOutput{
 		Stderr: "Consumer group '$groupId' has no active members.\n",

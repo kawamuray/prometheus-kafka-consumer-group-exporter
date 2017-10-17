@@ -126,6 +126,12 @@ var (
 		regexp.MustCompile(`(?P<topic>[a-zA-Z0-9\\._\\-]+)\s+(?P<partitionId>\d+)\s+(?P<currentOffset>\d+)\s+\d+\s+(?P<lag>\d+)\s+(?P<consumerId>\S+)\s+(?P<consumerAddress>\S+)\s+(?P<clientId>\S+)`),
 	)
 
+	// Parser for Kafka 0.10.1.X.
+	kafka0_10_1DescribeGroupParser = mustBuildNewRegexpParser(
+		regexp.MustCompile(`GROUP\s+TOPIC\s+PARTITION\s+CURRENT-OFFSET\s+LOG-END-OFFSET\s+LAG\s+OWNER`),
+		regexp.MustCompile(`.+\s+(?P<topic>[a-zA-Z0-9\\._\\-]+)\s+(?P<partitionId>\d+)\s+(?P<currentOffset>\d+)\s+\d+\s+(?P<lag>\d+)\s+(?P<clientId>\S+)_/(?P<consumerAddress>.+)`),
+	)
+
 	// Parser for Kafka 0.10.0.1. Since we are unsure if the column widths are dynamic, we are using `\s+` for delimiters.
 	kafka0_10_0_1DescribeGroupParser = mustBuildNewRegexpParser(
 		regexp.MustCompile(`GROUP\s+TOPIC\s+PARTITION\s+CURRENT-OFFSET\s+LOG-END-OFFSET\s+LAG\s+OWNER`),
@@ -151,6 +157,7 @@ func DefaultDescribeGroupParser() *DelegatingParser {
 		[]DescribeGroupParser{
 			kafka0_9_0_1DescribeGroupParser,
 			kafka0_10_0_1DescribeGroupParser,
+			kafka0_10_1DescribeGroupParser,
 			kafka0_10_2_1DescribeGroupParser,
 		},
 	}
