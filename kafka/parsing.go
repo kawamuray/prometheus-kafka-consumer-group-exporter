@@ -128,7 +128,7 @@ func (p *regexpParser) parseLine(line string) (*exporter.PartitionInfo, error) {
 		ConsumerAddress: matches[p.indexByName["consumerAddress"]],
 	}
 
-	return partitionInfo, nil
+	return partitionInfo, err
 }
 
 func parseLong(value string) (int64, error) {
