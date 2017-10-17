@@ -26,6 +26,8 @@ This exporter relies on `kafka-consumer-groups.sh` script that is shipped as
 part of Apache Kafka distribution.  Here is the list of Apache Kafka versions
 which has been tested to use from this exporter:
 
+ - `0.10.2.1`
+ - `0.10.1.X`
  - `0.10.0.1`
  - `0.9.0.1`
 

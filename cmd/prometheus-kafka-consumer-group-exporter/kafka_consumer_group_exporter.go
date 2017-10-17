@@ -6,7 +6,7 @@ import (
 	"os"
 	"time"
 
-	log "github.com/Sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 
 	"github.com/kawamuray/prometheus-kafka-consumer-group-exporter/kafka"
 	kafkaprom "github.com/kawamuray/prometheus-kafka-consumer-group-exporter/prometheus"
@@ -66,6 +66,7 @@ func main() {
 		}
 
 		kafkaClient := kafka.ConsumerGroupsCommandClient{
+			Parser:                   kafka.DefaultDescribeGroupParser(),
 			BootstrapServers:         bootstrapServers,
 			ConsumerGroupCommandPath: consumerGroupCommandPath,
 		}
