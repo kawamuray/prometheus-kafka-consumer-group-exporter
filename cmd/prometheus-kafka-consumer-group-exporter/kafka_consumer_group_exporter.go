@@ -56,9 +56,18 @@ func main() {
 		}
 		bootstrapServers := c.Args().Get(0)
 
+		consumerGroupCommandPath := c.String("consumer-group-command-path")
+		if data, err := os.Stat(consumerGroupCommandPath); os.IsNotExist(err) {
+			log.Fatal("`consumer-group-command-path` does not exist. File: ", consumerGroupCommandPath)
+		} else if err != nil {
+			log.Fatal("Unable to to stat() `consumer-group-command-path`. Error: ", err)
+		} else if perm := data.Mode().Perm(); perm&0111 == 0 {
+			log.Fatal("`consumer-group-command-path` does not have executable bit set. File: ", consumerGroupCommandPath)
+		}
+
 		kafkaClient := kafka.ConsumerGroupsCommandClient{
 			BootstrapServers:         bootstrapServers,
-			ConsumerGroupCommandPath: c.String("consumer-group-command-path"),
+			ConsumerGroupCommandPath: consumerGroupCommandPath,
 		}
 		fanInClient := sync.FanInConsumerGroupInfoClient{
 			Delegate: &kafkaClient,
