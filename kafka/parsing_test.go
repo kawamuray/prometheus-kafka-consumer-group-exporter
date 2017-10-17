@@ -10,35 +10,35 @@ func TestParsingPartitionTableForKafkaVersion0_10_2_1(t *T) {
 	output := CommandOutput{
 		Stderr: "Note: This will only show information about consumers that use the Java consumer API (non-ZooKeeper-based consumers).\n",
 		Stdout: `TOPIC                          PARTITION  CURRENT-OFFSET  LOG-END-OFFSET  LAG        CONSUMER-ID                                       HOST                           CLIENT-ID
-xxx           4          21555284        22970821        1415537    -                                                 -                              -
-yyy           1          496377          525680          29303      -                                                 -                              -
-yyy           7          478173          507408          29235      -                                                 -                              -`,
+topic1           0          3545            3547            2          consumer-1-583b2298-f285-4696-ba0e-576109284592   /10.21.95.43                   consumer-1
+topic2-detail 0          0               0               0          consumer-1-583b2298-f285-4696-ba0e-576109284592   /10.21.95.43                   consumer-1
+topic3            0          45              45              0          consumer-1-583b2298-f285-4696-ba0e-576109284592   /10.21.95.43                   consumer-1`,
 	}
 
 	expected := []exporter.PartitionInfo{
 		{
-			Topic:           "xxx",
-			PartitionID:     "4",
-			CurrentOffset:   21555284,
-			Lag:             1415537,
-			ClientID:        "-",
-			ConsumerAddress: "-",
+			Topic:           "topic1",
+			PartitionID:     "0",
+			CurrentOffset:   3545,
+			Lag:             2,
+			ClientID:        "consumer-1",
+			ConsumerAddress: "/10.21.95.43",
 		},
 		{
-			Topic:           "yyy",
-			PartitionID:     "1",
-			CurrentOffset:   496377,
-			Lag:             29303,
-			ClientID:        "-",
-			ConsumerAddress: "-",
+			Topic:           "topic2-detail",
+			PartitionID:     "0",
+			CurrentOffset:   0,
+			Lag:             0,
+			ClientID:        "consumer-1",
+			ConsumerAddress: "/10.21.95.43",
 		},
 		{
-			Topic:           "yyy",
-			PartitionID:     "7",
-			CurrentOffset:   478173,
-			Lag:             29235,
-			ClientID:        "-",
-			ConsumerAddress: "-",
+			Topic:           "topic3",
+			PartitionID:     "0",
+			CurrentOffset:   45,
+			Lag:             0,
+			ClientID:        "consumer-1",
+			ConsumerAddress: "/10.21.95.43",
 		},
 	}
 
