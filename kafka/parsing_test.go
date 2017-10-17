@@ -42,24 +42,36 @@ yyy           7          478173          507408          29235      -           
 		},
 	}
 
-	comparePartitionTable(t, kafka0_10_2_1DescribeGroupParser, output, expected)
-	comparePartitionTable(t, DefaultDescribeGroupParser(), output, expected)
+	t.Run("kafka0_10_2_1DescribeGroupParser", func(t *T) {
+		comparePartitionTable(t, kafka0_10_2_1DescribeGroupParser, output, expected)
+	})
+	t.Run("DefaultDescribeGroupParser", func(t *T) {
+		comparePartitionTable(t, DefaultDescribeGroupParser(), output, expected)
+	})
 }
 
 func TestParsingNoActiveMemberErrorForKafkaVersion0_10_2_1(t *T) {
 	output := CommandOutput{
 		Stderr: "Consumer group '$groupId' has no active members.\n",
 	}
-	assertErrorParsing(t, kafka0_10_2_1DescribeGroupParser, output)
-	assertErrorParsing(t, DefaultDescribeGroupParser(), output)
+	t.Run("kafka0_10_2_1DescribeGroupParser", func(t *T) {
+		assertErrorParsing(t, kafka0_10_2_1DescribeGroupParser, output)
+	})
+	t.Run("DefaultDescribeGroupParser", func(t *T) {
+		assertErrorParsing(t, DefaultDescribeGroupParser(), output)
+	})
 }
 
 func TestParsingWhenRebalancingErrorForKafkaVersion0_10_2_1(t *T) {
 	output := CommandOutput{
 		Stderr: "Warning: Consumer group '$groupId' is rebalancing.\n",
 	}
-	assertErrorParsing(t, kafka0_10_2_1DescribeGroupParser, output)
-	assertErrorParsing(t, DefaultDescribeGroupParser(), output)
+	t.Run("kafka0_10_2_1DescribeGroupParser", func(t *T) {
+		assertErrorParsing(t, kafka0_10_2_1DescribeGroupParser, output)
+	})
+	t.Run("DefaultDescribeGroupParser", func(t *T) {
+		assertErrorParsing(t, DefaultDescribeGroupParser(), output)
+	})
 }
 
 func assertErrorParsing(t *T, parser DescribeGroupParser, output CommandOutput) {
@@ -104,8 +116,12 @@ foobar-consumer topic-A                      0          91011178        91011179
 		},
 	}
 
-	comparePartitionTable(t, kafka0_10_0_1DescribeGroupParser, output, expected)
-	comparePartitionTable(t, DefaultDescribeGroupParser(), output, expected)
+	t.Run("kafka0_10_0_1DescribeGroupParser", func(t *T) {
+		comparePartitionTable(t, kafka0_10_0_1DescribeGroupParser, output, expected)
+	})
+	t.Run("DefaultDescribeGroupParser", func(t *T) {
+		comparePartitionTable(t, DefaultDescribeGroupParser(), output, expected)
+	})
 }
 
 func TestParsingPartitionTableForKafkaVersion0_9_0_1(t *T) {
@@ -143,8 +159,12 @@ foobar-consumer, topic-A, 0, 91011145, 91011145, 0, foobar-consumer-1-StreamThre
 		},
 	}
 
-	comparePartitionTable(t, kafka0_9_0_1DescribeGroupParser, output, expected)
-	comparePartitionTable(t, DefaultDescribeGroupParser(), output, expected)
+	t.Run("kafka0_9_0_1DescribeGroupParser", func(t *T) {
+		comparePartitionTable(t, kafka0_9_0_1DescribeGroupParser, output, expected)
+	})
+	t.Run("DefaultDescribeGroupParser", func(t *T) {
+		comparePartitionTable(t, DefaultDescribeGroupParser(), output, expected)
+	})
 }
 
 func comparePartitionTable(t *T, parser DescribeGroupParser, output CommandOutput, expected []exporter.PartitionInfo) {
