@@ -9,7 +9,8 @@ import (
 func TestParsingPartitionTableForKafkaVersion0_10_2_1(t *T) {
 	output := CommandOutput{
 		Stderr: "Note: This will only show information about consumers that use the Java consumer API (non-ZooKeeper-based consumers).\n",
-		Stdout: `TOPIC                          PARTITION  CURRENT-OFFSET  LOG-END-OFFSET  LAG        CONSUMER-ID                                       HOST                           CLIENT-ID
+		Stdout: `
+TOPIC                          PARTITION  CURRENT-OFFSET  LOG-END-OFFSET  LAG        CONSUMER-ID                                       HOST                           CLIENT-ID
 topic1           0          3545            3547            2          consumer-1-583b2298-f285-4696-ba0e-576109284592   /10.21.95.43                   consumer-1
 topic2-detail 0          0               0               0          consumer-1-583b2298-f285-4696-ba0e-576109284592   /10.21.95.43                   consumer-1
 topic3            0          45              45              0          consumer-1-583b2298-f285-4696-ba0e-576109284592   /10.21.95.43                   consumer-1`,

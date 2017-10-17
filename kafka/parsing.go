@@ -52,7 +52,7 @@ func newRegexpParser(header, line *regexp.Regexp) (*regexpParser, error) {
 }
 
 func (p *regexpParser) Parse(output CommandOutput) ([]exporter.PartitionInfo, error) {
-	lines := strings.Split(output.Stdout, "\n")
+	lines := removeEmptyLines(strings.Split(output.Stdout, "\n"))
 	if len(lines) == 0 {
 		return nil, errors.New("empty output. stderr: " + output.Stderr)
 	}
@@ -74,6 +74,16 @@ func (p *regexpParser) Parse(output CommandOutput) ([]exporter.PartitionInfo, er
 		partitions = append(partitions, *partition)
 	}
 	return partitions, err
+}
+
+func removeEmptyLines(s []string) []string {
+	output := make([]string, 0, len(s))
+	for _, e := range s {
+		if strings.Trim(e, " ") != "" {
+			output = append(output, e)
+		}
+	}
+	return output
 }
 
 func (p *regexpParser) String() string {
