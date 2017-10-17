@@ -98,6 +98,6 @@ func TestKafkaDownFails(t *T) {
 	_, err := consumer.Groups(ctx)
 	cancel()
 	if err == nil {
-		t.Error("Expected an error when not being to connect to to Kafka.")
+		t.Error("Expected an error when not being able to connect to Kafka.")
 	}
 }
