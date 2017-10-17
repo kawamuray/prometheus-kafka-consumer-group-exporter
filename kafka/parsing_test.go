@@ -51,6 +51,35 @@ topic3            0          45              45              0          consumer
 	})
 }
 
+func TestParsingPartitionTableWithMissingValuesForKafkaVersion0_10_2_1(t *T) {
+	output := CommandOutput{
+		Stderr: "Note: This will only show information about consumers that use the Java consumer API (non-ZooKeeper-based consumers).\n",
+		Stdout: `
+TOPIC                          PARTITION  CURRENT-OFFSET  LOG-END-OFFSET  LAG        CONSUMER-ID                                       HOST                           CLIENT-ID
+UPDATE_TRANSACTIONS            0          12              12              0          consumer-1-6e9f2372-79fc-4f60-8c0e-3fdb995bad29   /10.1.2.3                  consumer-1
+-                              -          -               -               -          consumer-1-868b1bd1-824c-4d43-a4a6-5af0f331452a   /10.2.3.4                  consumer-1
+-                              -          -               -               -          consumer-1-d6a6c9b7-fd62-46b7-996f-2cfe0a956262   /10.5.6.7                  consumer-1`,
+	}
+
+	expected := []exporter.PartitionInfo{
+		{
+			Topic:           "UPDATE_TRANSACTIONS",
+			PartitionID:     "0",
+			CurrentOffset:   12,
+			Lag:             0,
+			ClientID:        "consumer-1",
+			ConsumerAddress: "/10.1.2.3",
+		},
+	}
+
+	t.Run("kafka0_10_2_1DescribeGroupParser", func(t *T) {
+		comparePartitionTable(t, kafka0_10_2_1DescribeGroupParser, output, expected)
+	})
+	t.Run("DefaultDescribeGroupParser", func(t *T) {
+		comparePartitionTable(t, DefaultDescribeGroupParser(), output, expected)
+	})
+}
+
 func TestParsingPartitionTableForKafkaVersion0_10_1_X(t *T) {
 	output := CommandOutput{
 		Stdout: `GROUP                          TOPIC                          PARTITION  CURRENT-OFFSET  LOG-END-OFFSET  LAG             OWNER
