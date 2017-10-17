@@ -95,18 +95,6 @@ func (p *regexpParser) parseLine(line string) (*exporter.PartitionInfo, error) {
 
 	var err error
 
-	var currentOffset int64
-	if currentOffsetIndex := p.indexByName["currentOffset"]; currentOffsetIndex >= len(matches) {
-		currentOffset = -1
-		err = fmt.Errorf("unable to find current offset field. Line: %s", line)
-		log.Warn(err.Error())
-	} else {
-		currentOffset, err = parseLong(matches[currentOffsetIndex])
-	}
-	if err != nil {
-		log.Warn("unable to parse int for current offset. Line: %s", line)
-	}
-
 	var lag int64
 	if lagIndex := p.indexByName["lag"]; lagIndex >= len(matches) {
 		lag = -1
@@ -117,6 +105,18 @@ func (p *regexpParser) parseLine(line string) (*exporter.PartitionInfo, error) {
 	}
 	if err != nil {
 		log.Warn("unable to parse int for lag. line: %s", line)
+	}
+
+	var currentOffset int64
+	if currentOffsetIndex := p.indexByName["currentOffset"]; currentOffsetIndex >= len(matches) {
+		currentOffset = -1
+		err = fmt.Errorf("unable to find current offset field. Line: %s", line)
+		log.Warn(err.Error())
+	} else {
+		currentOffset, err = parseLong(matches[currentOffsetIndex])
+	}
+	if err != nil {
+		log.Warn("unable to parse int for current offset. Line: %s", line)
 	}
 
 	partitionInfo := &exporter.PartitionInfo{
