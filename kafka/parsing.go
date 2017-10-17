@@ -11,6 +11,10 @@ import (
 	"github.com/prometheus/common/log"
 )
 
+const missingColumnValue = "-"
+
+var errLagMissing = errors.New("lag is missing")
+
 func parseGroups(output CommandOutput) ([]string, error) {
 	if strings.Contains(output.Stderr, "java.lang.RuntimeException") {
 		return nil, fmt.Errorf("Got runtime error when executing script. Output: %s", output)
@@ -68,6 +72,10 @@ func (p *regexpParser) Parse(output CommandOutput) ([]exporter.PartitionInfo, er
 	var partition *exporter.PartitionInfo
 	for _, line := range dataLines {
 		partition, err = p.parseLine(line)
+		if err == errLagMissing {
+			err = nil
+			continue
+		}
 		if err != nil {
 			break
 		}
@@ -100,6 +108,9 @@ func (p *regexpParser) parseLine(line string) (*exporter.PartitionInfo, error) {
 		lag = -1
 		err = fmt.Errorf("unable to find current offset field. line: %s", line)
 		log.Warn(err.Error())
+	} else if matches[lagIndex] == missingColumnValue {
+		// This happens when there are more consumers than partitions.
+		return nil, errLagMissing
 	} else {
 		lag, err = parseLong(matches[lagIndex])
 	}
@@ -144,8 +155,7 @@ var (
 	// Parser for Kafka 0.10.2.1. Since we are unsure if the column widths are dynamic, we are using `\s+` for delimiters.
 	kafka0_10_2_1DescribeGroupParser = mustBuildNewRegexpParser(
 		regexp.MustCompile(`TOPIC\s+PARTITION\s+CURRENT-OFFSET\s+LOG-END-OFFSET\s+LAG\s+CONSUMER-ID\s+HOST\s+CLIENT-ID`),
-		// "topic", "partitionId", "currentOffset", "lag", "clientId", "consumerAddress"
-		regexp.MustCompile(`(?P<topic>[a-zA-Z0-9\\._\\-]+)\s+(?P<partitionId>\d+)\s+(?P<currentOffset>\d+)\s+\d+\s+(?P<lag>\d+)\s+(?P<consumerId>\S+)\s+(?P<consumerAddress>\S+)\s+(?P<clientId>\S+)`),
+		regexp.MustCompile(`(?P<topic>[a-zA-Z0-9\\._\\-]+)\s+(?P<partitionId>\d+|-)\s+(?P<currentOffset>\d+|-)\s+(\d+|-)\s+(?P<lag>\d+|-)\s+(?P<consumerId>\S+)\s+(?P<consumerAddress>\S+)\s+(?P<clientId>\S+)`),
 	)
 
 	// Parser for Kafka 0.10.1.X.
