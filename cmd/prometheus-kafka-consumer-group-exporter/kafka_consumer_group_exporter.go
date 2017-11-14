@@ -17,7 +17,7 @@ import (
 )
 
 const consumerGroupCommandName = "kafka-consumer-groups.sh"
-const version = "0.0.2"
+const version = "0.0.3"
 
 func main() {
 	app := cli.NewApp()
