@@ -14,15 +14,16 @@ script: go test -v -race ./...
 before_deploy:
   - PLATFORMS=(darwin/386 darwin/amd64 freebsd/386 freebsd/amd64 freebsd/arm linux/386 linux/amd64 linux/arm windows/386 windows/amd64)
  # build binary for all archs
+  - go get -u ./...
   - |
     for PLATFORM in "${PLATFORMS[@]}"; do
       echo "Building $PLATFORM"
       GOOS=${PLATFORM%/*}
       GOARCH=${PLATFORM#*/}
       if [ "$GOOS" = "windows" ]; then
-        build_cmd="GOOS=$GOOS GOARCH=$GOARCH go build -o kafka_consumer_group_exporter -ldflags '-w -s'"
+        build_cmd="GOOS=$GOOS GOARCH=$GOARCH go build -o kafka_consumer_group_exporter -ldflags '-w -s' ./cmd/prometheus-kafka-consumer-group-exporter/kafka_consumer_group_exporter.go"
       else
-        build_cmd="CGO_ENABLED=0 GOOS=$GOOS GOARCH=$GOARCH go build -o kafka_consumer_group_exporter -ldflags '-d -w -s'"
+        build_cmd="CGO_ENABLED=0 GOOS=$GOOS GOARCH=$GOARCH go build -o kafka_consumer_group_exporter -ldflags '-d -w -s' ./cmd/prometheus-kafka-consumer-group-exporter/kafka_consumer_group_exporter.go"
       fi
       if ! eval $build_cmd; then
         echo "Failed building kafka_consumer_group_exporter for $PLATFORM" && return 1
