@@ -23,7 +23,7 @@ topic3            0          45              45              0          consumer
 			CurrentOffset:   3545,
 			Lag:             2,
 			ClientID:        "consumer-1",
-			ConsumerAddress: "/10.21.95.43",
+			ConsumerAddress: "10.21.95.43",
 		},
 		{
 			Topic:           "topic2-detail",
@@ -31,7 +31,7 @@ topic3            0          45              45              0          consumer
 			CurrentOffset:   0,
 			Lag:             0,
 			ClientID:        "consumer-1",
-			ConsumerAddress: "/10.21.95.43",
+			ConsumerAddress: "10.21.95.43",
 		},
 		{
 			Topic:           "topic3",
@@ -39,7 +39,7 @@ topic3            0          45              45              0          consumer
 			CurrentOffset:   45,
 			Lag:             0,
 			ClientID:        "consumer-1",
-			ConsumerAddress: "/10.21.95.43",
+			ConsumerAddress: "10.21.95.43",
 		},
 	}
 
@@ -68,7 +68,43 @@ UPDATE_TRANSACTIONS            0          12              12              0     
 			CurrentOffset:   12,
 			Lag:             0,
 			ClientID:        "consumer-1",
-			ConsumerAddress: "/10.1.2.3",
+			ConsumerAddress: "10.1.2.3",
+		},
+	}
+
+	t.Run("kafka0_10_2_1DescribeGroupParser", func(t *T) {
+		comparePartitionTable(t, kafka0_10_2_1DescribeGroupParser, output, expected)
+	})
+	t.Run("DefaultDescribeGroupParser", func(t *T) {
+		comparePartitionTable(t, DefaultDescribeGroupParser(), output, expected)
+	})
+}
+
+func TestParsingPartitionTableWithLongConsumerIDForKafkaVersion0_10_2_1(t *T) {
+	output := CommandOutput{
+		Stderr: "Note: This will only show information about consumers that use the Java consumer API (non-ZooKeeper-based consumers).\n",
+		Stdout: `
+TOPIC                          PARTITION  CURRENT-OFFSET  LOG-END-OFFSET  LAG        CONSUMER-ID                                       HOST                           CLIENT-ID
+topic1        0          2               2               0          looong-name-consumer-e12431ea-8ba0-420c-9be7-70c30840f59a/11.111.111.111                looong-name-consumer
+topic2        0          2               3               4          looong-name-consumer-e12431ea-8ba0-420c-9be7-70c30840f59a/11.111.111.111                looong-name-consumer`,
+	}
+
+	expected := []exporter.PartitionInfo{
+		{
+			Topic:           "topic1",
+			PartitionID:     "0",
+			CurrentOffset:   2,
+			Lag:             0,
+			ClientID:        "looong-name-consumer",
+			ConsumerAddress: "11.111.111.111",
+		},
+		{
+			Topic:           "topic2",
+			PartitionID:     "0",
+			CurrentOffset:   2,
+			Lag:             4,
+			ClientID:        "looong-name-consumer",
+			ConsumerAddress: "11.111.111.111",
 		},
 	}
 
