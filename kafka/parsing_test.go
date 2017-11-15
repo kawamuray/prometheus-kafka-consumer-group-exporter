@@ -51,6 +51,33 @@ topic3            0          45              45              0          consumer
 	})
 }
 
+func TestParsingPartitionTableWithMissingValuesConsumerIdForKafkaVersion0_10_2_1(t *T) {
+	output := CommandOutput{
+        Stderr: "NOTE: When there is no active consumer CONSUMER_ID, HOST and CLIENT-ID is -\n",
+		Stdout: `
+TOPIC           PARTITION   CURRENT-OFFSET  LOG-END-OFFSET  LAG     CONSUMER-ID     HOST        CLIENT-ID
+TEST            0           109             134             25      -               -           -`,
+	}
+
+	expected := []exporter.PartitionInfo{
+		{
+			Topic:           "TEST",
+			PartitionID:     "0",
+			CurrentOffset:   109,
+			Lag:             25,
+			ClientID:        "-",
+			ConsumerAddress: "-",
+		},
+	}
+
+	t.Run("kafka0_10_2_1DescribeGroupParser", func(t *T) {
+		comparePartitionTable(t, kafka0_10_2_1DescribeGroupParser, output, expected)
+	})
+	t.Run("DefaultDescribeGroupParser", func(t *T) {
+		comparePartitionTable(t, DefaultDescribeGroupParser(), output, expected)
+	})
+}
+
 func TestParsingPartitionTableWithMissingValuesForKafkaVersion0_10_2_1(t *T) {
 	output := CommandOutput{
 		Stderr: "Note: This will only show information about consumers that use the Java consumer API (non-ZooKeeper-based consumers).\n",

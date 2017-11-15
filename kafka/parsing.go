@@ -155,7 +155,7 @@ var (
 	// Parser for Kafka 0.10.2.1. Since we are unsure if the column widths are dynamic, we are using `\s+` for delimiters.
 	kafka0_10_2_1DescribeGroupParser = mustBuildNewRegexpParser(
 		regexp.MustCompile(`TOPIC\s+PARTITION\s+CURRENT-OFFSET\s+LOG-END-OFFSET\s+LAG\s+CONSUMER-ID\s+HOST\s+CLIENT-ID`),
-		regexp.MustCompile(`(?P<topic>[a-zA-Z0-9\\._\\-]+)\s+(?P<partitionId>\d+|-)\s+(?P<currentOffset>\d+|-)\s+(\d+|-)\s+(?P<lag>\d+|-)\s+(?P<consumerId>\S+)\s*/(?P<consumerAddress>\S+)\s+(?P<clientId>\S+)`),
+		regexp.MustCompile(`(?P<topic>[a-zA-Z0-9\\._\\-]+)\s+(?P<partitionId>\d+|-)\s+(?P<currentOffset>\d+|-)\s+(\d+|-)\s+(?P<lag>\d+|-)\s+(?P<consumerId>[^/\s]+)\s*/?(?P<consumerAddress>\S+)\s+(?P<clientId>\S+)`),
 	)
 
 	// Parser for Kafka 0.10.1.X.
